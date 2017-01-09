@@ -3,16 +3,31 @@
 function main {
     case "$1" in
 
-    "install")
-    install;;
+    "execute")
+        assign-inputs $@
+        execute
+        ;;
+    *)
+        fail
+        ;;
 
     esac
 }
 
+function assign-inputs {
+     echo "Assign inputs"
+     ACCESS_KEY="$2"
+     SECRET_KEY="$3"
+     if [[ -z $ACCESS_KEY || -z $SECRET_KEY ]]; then
+        echo "Please enter ACCESS_KEY and SECRET_KEY"
+        exit 1
+     fi
+}
+
 function terraform-not-installed {
-    echo "checking if terraform is installed"
-    if ! type "$terraform" > /dev/null; then
-        echo "Terraform not installed"
+    echo "checking if terraform file exists"
+    if [ ! -f terraform ]; then
+        echo "Terraform file not found"
         return 0
     fi
     return 1
@@ -28,23 +43,33 @@ function install-terraform {
     download-terraform
 }
 
+function run-terraform {
+    echo "Applying terraform for concourse CI"
+    ./terraform apply \
+        -var "access_key=${ACCESS_KEY}" \
+        -var "secret_key=${SECRET_KEY}"
+}
+
+function install-terraform-if-needed {
+     if terraform-not-installed; then
+        install-terraform
+    fi
+}
+
 function cleanup {
     echo "deleting installation file"
     rm -rf terraform.zip
 }
 
-function install {
-    if terraform-not-installed; then
-        install-terraform
-    fi
-    echo "running terraform"
-    
-    cleanup
-}
-
 function fail {
     echo "Please use one of the expected commands 'install'"
     exit 1
+}
+
+function execute {
+   install-terraform-if-needed
+   run-terraform
+   cleanup
 }
 
 main $@
