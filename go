@@ -7,6 +7,11 @@ function main {
         assign-inputs $@
         execute
         ;;
+    "check-execute")
+        assign-inputs $@
+        check-execute
+        ;;
+
     *)
         fail
         ;;
@@ -43,6 +48,13 @@ function install-terraform {
     download-terraform
 }
 
+function check-run-terraform {
+    echo "Applying terraform for concourse CI"
+    ./terraform plan \
+        -var "access_key=${ACCESS_KEY}" \
+        -var "secret_key=${SECRET_KEY}"
+}
+
 function run-terraform {
     echo "Applying terraform for concourse CI"
     ./terraform apply \
@@ -64,6 +76,12 @@ function cleanup {
 function fail {
     echo "Please use one of the expected commands 'install'"
     exit 1
+}
+
+function check-execute {
+   install-terraform-if-needed
+   check-run-terraform
+   cleanup
 }
 
 function execute {

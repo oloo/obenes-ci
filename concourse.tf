@@ -10,4 +10,8 @@ provider "aws" {
 resource "aws_instance" "obene-concourse-ci" {
   ami = "ami-b63769a1"
   instance_type = "t2.small"
+  tags {
+    name = "Obene Concourse CI"
+    group = "Obene"
+  }
 }
