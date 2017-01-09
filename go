@@ -11,7 +11,6 @@ function main {
         assign-inputs $@
         check-execute
         ;;
-
     *)
         fail
         ;;
